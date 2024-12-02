@@ -25,8 +25,20 @@ FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
 RUN dotnet publish "./TxtServerAsAPIDocker.csproj" -c %BUILD_CONFIGURATION% -o /app/publish /p:UseAppHost=false
 
+# Download and install Visual C++ Redistributable Packages
+#USER ContainerAdministrator
+RUN Invoke-WebRequest -OutFile vc_redist.x64.exe "https://aka.ms/vs/17/release/vc_redist.x64.exe"; \
+    Start-Process "vc_redist.x64.exe" -ArgumentList "/passive" -wait -Passthru; \
+    Remove-Item -Force vc_redist.x64.exe;
+
+
 # This stage is used in production or when running from VS in regular mode (Default when not using the Debug configuration)
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
+
+## Install the TX Text Control Service
+RUN New-Service -Name "TXBackend" -BinaryPathName '"C:\app\SyncService\TXTextControl.Web.Server.exe"';
+
+
 ENTRYPOINT ["dotnet", "TxtServerAsAPIDocker.dll"]
