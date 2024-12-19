@@ -18,42 +18,43 @@ namespace TxtServerAsAPIDocker.Controllers
         [Route("List")]
         public IEnumerable<DocumentData> List()
         {
-            // file all file names from App_Data
             var files = Directory.GetFiles("App_Data");
-            var data = new List<DocumentData>();
-            foreach (var file in files)
+            return files.Select(file => new DocumentData
             {
-                data.Add(new DocumentData
-                {
-                    Name = Path.GetFileName(file),
-                });
-            }
-            return data;
+                Name = Path.GetFileName(file),
+            });
         }
 
         [HttpGet]
         [Route("Load")]
-        public DocumentData Load(string name)
+        public ActionResult<DocumentData> Load(string name)
         {
-            // load the file from App_Data
             var file = Path.Combine("App_Data", name);
-            var data = new DocumentData
+            if (!System.IO.File.Exists(file))
+            {
+                return NotFound();
+            } 
+
+            var data = new DocumentData 
             {
                 Name = name,
                 Data = Convert.ToBase64String(System.IO.File.ReadAllBytes(file)),
             };
             return data;
         }
-
+        
         [HttpPost]
         [Route("Save")]
-        public bool Save([FromBody] DocumentData documentData)
+        public IActionResult Save([FromBody] DocumentData documentData)
         {
-            // save the file to App_Data
+            if (documentData == null || string.IsNullOrEmpty(documentData.Name) || string.IsNullOrEmpty(documentData.Data))
+            {
+                return BadRequest();
+            }
+
             var file = Path.Combine("App_Data", documentData.Name);
             System.IO.File.WriteAllBytes(file, Convert.FromBase64String(documentData.Data));
-            return true;
+            return Ok();
         }
-
     }
 }

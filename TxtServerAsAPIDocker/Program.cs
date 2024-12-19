@@ -1,5 +1,6 @@
 
 using TXTextControl.Web;
+using TxtServerAsAPIDocker.Helpers;
 
 namespace TxtServerAsAPIDocker
 {
@@ -42,6 +43,11 @@ namespace TxtServerAsAPIDocker
             // adding the TX Text Control WebSocket middleware
             app.UseTXWebSocketMiddleware();
             //app.UseTXDocumentViewer();
+
+            foreach (string font in Directory.GetFiles(Path.Combine(app.Environment.ContentRootPath, "InstallFonts")))
+            {
+                Fonts.AddFontResource(font);
+            }
 
 
             app.MapControllers();

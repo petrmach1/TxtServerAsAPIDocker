@@ -38,7 +38,7 @@ WORKDIR /app
 COPY --from=publish /app/publish .
 
 ## Install the TX Text Control Service
-RUN New-Service -Name "TXBackend" -BinaryPathName '"C:\app\SyncService\TXTextControl.Web.Server.exe"';
+RUN New-Service -Name "TXBackend" -BinaryPathName '"C:\SyncService\TXTextControl.Web.Server.exe"';
 
 
 ENTRYPOINT ["dotnet", "TxtServerAsAPIDocker.dll"]
